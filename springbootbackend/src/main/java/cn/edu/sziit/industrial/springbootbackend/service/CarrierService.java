@@ -19,4 +19,7 @@ public interface CarrierService {
 
     List<Carrier> findByConditions(String detailType, String cleaningStatus, String durableSpecID,
                                    String carrierStatus, String capacityStatus);
+    Carrier updateCarrierStatus(String carrierID, String action);
+    Carrier createCarrier(Carrier carrier);
+
 }

@@ -1,9 +1,6 @@
 package cn.edu.sziit.industrial.springbootbackend.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Data;
 
 import java.util.Date;
@@ -54,7 +51,12 @@ public class Carrier {
     private String LocationID;
 
     @Column(name = "edit_time")
+    @Temporal(TemporalType.TIMESTAMP)
     private Date edit_time;
+
+    @Column(name = "create_time", nullable = false, updatable = false, insertable = false, columnDefinition = "datetime default CURRENT_TIMESTAMP")
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date createTime;
 
     @Column(name = "MaxCleaningCount")
     private Integer MaxCleaningCount;

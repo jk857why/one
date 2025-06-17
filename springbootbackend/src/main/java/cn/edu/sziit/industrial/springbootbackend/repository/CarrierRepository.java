@@ -4,6 +4,7 @@ import cn.edu.sziit.industrial.springbootbackend.entity.Carrier;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
@@ -22,6 +23,10 @@ public interface CarrierRepository extends JpaRepository<Carrier, String>, JpaSp
     List<String> findDistinctCarrierStatus();
 
     @Query("select distinct c.CapacityStatus from Carrier c")
+
     List<String> findDistinctCapacityStatus();
+    @Query("SELECT c FROM Carrier c WHERE c.DurableSpecID = :durableSpecID AND c.CarrierStatus <> '报废' ORDER BY c.CarrierID DESC")
+    List<Carrier> findActiveByDurableSpecIDOrderByCarrierIDDesc(@Param("durableSpecID") String durableSpecID);
+
 }
 

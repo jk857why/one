@@ -35,4 +35,18 @@ public class CarrierController {
         return carrierService.findByConditions(detailType, cleaningStatus, durableSpecID, carrierStatus, capacityStatus);
     }
 
+    // 创建载具（新建）
+    @PostMapping("/create")
+    public Carrier createCarrier(@RequestBody Carrier carrier) {
+        return carrierService.createCarrier(carrier);
+    }
+    // 载具状态修改通用接口
+    @PutMapping("/{carrierId}/status")
+    public Carrier updateCarrierStatus(
+            @PathVariable String carrierId,
+            @RequestParam String action
+    ) {
+        return carrierService.updateCarrierStatus(carrierId, action);
+    }
+
 }
