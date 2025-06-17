@@ -10,11 +10,8 @@ public interface CarrierService {
     List<Carrier> findAll();
 
     Optional<Carrier> findById(String carrierID);
-
     Carrier save(Carrier carrier);
-
     void deleteById(String carrierID);
-
     List<String> getDistinctFieldValues(String fieldName);
 
     List<Carrier> findByConditions(String detailType, String cleaningStatus, String durableSpecID,

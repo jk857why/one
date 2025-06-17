@@ -27,6 +27,4 @@ public interface CarrierRepository extends JpaRepository<Carrier, String>, JpaSp
     List<String> findDistinctCapacityStatus();
     @Query("SELECT c FROM Carrier c WHERE c.DurableSpecID = :durableSpecID AND c.CarrierStatus <> '报废' ORDER BY c.CarrierID DESC")
     List<Carrier> findActiveByDurableSpecIDOrderByCarrierIDDesc(@Param("durableSpecID") String durableSpecID);
-
 }
-

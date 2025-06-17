@@ -8,3 +8,4 @@ import org.springframework.stereotype.Repository;
 public interface DurableSpecRepository extends JpaRepository<DurableSpec, String> {
     // JpaRepository 已经自带 findById, save, delete 等方法
 }
+
