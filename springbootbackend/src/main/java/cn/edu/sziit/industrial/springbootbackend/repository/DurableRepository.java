@@ -14,9 +14,8 @@ public interface DurableRepository extends JpaRepository<DurableGoods, String> {
     List<DurableGoods> findByDurableSpecID(String durableSpecID);
 
     // 查询所有不重复的 DurableSpecID
-    @Query("SELECT DISTINCT d.durableSpecID FROM DurableGoods d ORDER BY d.durableSpecID")
+    @Query(value = "SELECT DISTINCT DurableSpecID FROM durable_goods WHERE DurableSpecID IS NOT NULL AND DurableSpecID <> '' ORDER BY DurableSpecID ASC", nativeQuery = true)
     List<String> findDistinctDurableSpecID();
-
     // 联合 Durable 和 Carrier（返回 Object[]，如需 DTO 可进一步封装）
     @Query(value = """
         SELECT d.*, c.*

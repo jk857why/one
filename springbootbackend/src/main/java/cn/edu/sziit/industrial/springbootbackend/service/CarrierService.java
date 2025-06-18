@@ -5,8 +5,11 @@ import cn.edu.sziit.industrial.springbootbackend.repository.CarrierRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+
+import static org.apache.tomcat.util.http.FastHttpDateFormat.parseDate;
 
 @Service
 public class CarrierService {
@@ -24,11 +27,17 @@ public class CarrierService {
         return carrierRepository.findById(carrierID);
     }
 
-    public List<Carrier> findCarriersByConditions(String carrierDetailType, String cleaningStatus,
-                                                  String durableSpecID, String carrierStatus, String capacityStatus) {
-        return carrierRepository.findByConditions(carrierDetailType, cleaningStatus, durableSpecID, carrierStatus, capacityStatus);
-    }
+    public List<Carrier> findCarriersByConditions(String carrierID, String carrierDetailType,
+                                                  String cleaningStatus, String durableSpecID,
+                                                  String carrierStatus, String capacityStatus,
+                                                  String startStr, String endStr) {
+        Date start = new Date(parseDate(startStr));
+        Date end = new Date(parseDate(endStr));
 
+
+        return carrierRepository.findByConditions(carrierID, carrierDetailType, cleaningStatus,
+                durableSpecID, carrierStatus, capacityStatus, start, end);
+    }
     public Carrier saveCarrier(Carrier carrier) {
         return carrierRepository.save(carrier);
     }
@@ -100,5 +109,16 @@ public class CarrierService {
                 throw new IllegalArgumentException("Unsupported field: " + fieldName);
         }
     }
+    @Transactional
+    public boolean markCarrierIdle(String carrierID) {
+        Optional<Carrier> optional = carrierRepository.findById(carrierID);
+        if (!optional.isPresent()) return false;
 
+        Carrier carrier = optional.get();
+        carrier.setCarrierStatus("Idle");
+        carrier.setEditTime(new Date());
+
+        carrierRepository.save(carrier);
+        return true;
+    }
 }

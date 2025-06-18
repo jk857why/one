@@ -34,14 +34,17 @@ public class CarrierController {
     // 根据多个条件查询载具，参数可选
     @GetMapping("/search")
     public List<Carrier> findByConditions(
+            @RequestParam(required = false) String carrierID,
             @RequestParam(required = false) String carrierDetailType,
             @RequestParam(required = false) String cleaningStatus,
             @RequestParam(required = false) String durableSpecID,
             @RequestParam(required = false) String carrierStatus,
-            @RequestParam(required = false) String capacityStatus
+            @RequestParam(required = false) String capacityStatus,
+            @RequestParam(required = false) String start,
+            @RequestParam(required = false) String end
     ) {
-        return carrierService.findCarriersByConditions(carrierDetailType, cleaningStatus,
-                durableSpecID, carrierStatus, capacityStatus);
+        return carrierService.findCarriersByConditions(
+                carrierID, carrierDetailType, cleaningStatus, durableSpecID, carrierStatus, capacityStatus, start, end);
     }
 
     // 新增或更新载具
@@ -93,6 +96,16 @@ public class CarrierController {
             return ResponseEntity.ok(values);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @PutMapping("/{id}/idle")
+    public ResponseEntity<String> markCarrierIdle(@PathVariable("id") String id) {
+        boolean success = carrierService.markCarrierIdle(id);
+        if (success) {
+            return ResponseEntity.ok("Carrier marked as Idle.");
+        } else {
+            return ResponseEntity.notFound().build();
         }
     }
 
