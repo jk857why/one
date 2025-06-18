@@ -1,32 +1,33 @@
 <template>
-  <div>
-    <el-form :inline="true" label-width="120px">
+  <div class="carrier-view-container">
+    <!-- 查询区域 -->
+    <el-form :inline="true" class="filter-bar">
       <el-form-item label="载具细分类型">
-        <el-select v-model="search.carrierDetailType" placeholder="请选择">
+        <el-select v-model="search.carrierDetailType" placeholder="请选择" class="select-item">
           <el-option v-for="item in detailTypes" :key="item" :label="item" :value="item" />
         </el-select>
       </el-form-item>
 
       <el-form-item label="清洁状态">
-        <el-select v-model="search.cleaningStatus" placeholder="请选择">
+        <el-select v-model="search.cleaningStatus" placeholder="请选择" class="select-item">
           <el-option v-for="item in cleaningStatuses" :key="item" :label="item" :value="item" />
         </el-select>
       </el-form-item>
 
       <el-form-item label="耐用品规格号">
-        <el-select v-model="search.durableSpecID" placeholder="请选择">
+        <el-select v-model="search.durableSpecID" placeholder="请选择" class="select-item">
           <el-option v-for="item in durableSpecIDs" :key="item" :label="item" :value="item" />
         </el-select>
       </el-form-item>
 
       <el-form-item label="载具状态">
-        <el-select v-model="search.carrierStatus" placeholder="请选择">
+        <el-select v-model="search.carrierStatus" placeholder="请选择" class="select-item">
           <el-option v-for="item in carrierStatuses" :key="item" :label="item" :value="item" />
         </el-select>
       </el-form-item>
 
       <el-form-item label="容量状态">
-        <el-select v-model="search.capacityStatus" placeholder="请选择">
+        <el-select v-model="search.capacityStatus" placeholder="请选择" class="select-item">
           <el-option v-for="item in capacityStatuses" :key="item" :label="item" :value="item" />
         </el-select>
       </el-form-item>
@@ -35,27 +36,38 @@
         <el-button type="primary" @click="loadTableData">查询</el-button>
       </el-form-item>
     </el-form>
-<el-table :data="tableData" border style="width: 100%; margin-top: 20px">
-  <el-table-column prop="carrierID" label="载具编号" />
-  <el-table-column prop="carrierType" label="载具类型" />
-  <el-table-column prop="carrierDetailType" label="载具细分类型" />
-  <el-table-column prop="durableSpecID" label="耐用品规格号" />
-  <el-table-column prop="carrierStatus" label="载具状态" />
-  <el-table-column prop="cleaningStatus" label="清洁状态" />
-  <el-table-column prop="lockStatus" label="锁定状态" />
-  <el-table-column prop="capacityStatus" label="容量状态" />
-  <el-table-column prop="batchNumber" label="批次号" />
-  <el-table-column prop="batchQuantity" label="批次数量" />
-  <el-table-column prop="eqp_id" label="设备号" />
-  <el-table-column prop="port_id" label="端口号" />
-  <el-table-column prop="locationID" label="位置号" />
-  <el-table-column prop="edit_time" label="编辑时间" />
-  <el-table-column prop="create_time" label="创建时间" />
-  <el-table-column prop="maxCleaningCount" label="最大清洗次数" />
-  <el-table-column prop="cleaningCount" label="当前清洗次数" />
-</el-table>
 
-    <div style="margin-top: 20px; display: flex; flex-wrap: wrap; gap: 10px;">
+    <!-- 表格区域 -->
+    <div class="table-wrapper">
+      <el-table
+        :data="tableData"
+        border
+        height="100%"
+        style="width: 100%"
+        empty-text="暂无数据"
+      >
+        <el-table-column prop="carrierID" label="载具编号" />
+        <el-table-column prop="carrierType" label="载具类型" />
+        <el-table-column prop="carrierDetailType" label="载具细分类型" />
+        <el-table-column prop="durableSpecID" label="耐用品规格号" />
+        <el-table-column prop="carrierStatus" label="载具状态" />
+        <el-table-column prop="cleaningStatus" label="清洁状态" />
+        <el-table-column prop="lockStatus" label="锁定状态" />
+        <el-table-column prop="capacityStatus" label="容量状态" />
+        <el-table-column prop="batchNumber" label="批次号" />
+        <el-table-column prop="batchQuantity" label="批次数量" />
+        <el-table-column prop="eqp_id" label="设备号" />
+        <el-table-column prop="port_id" label="端口号" />
+        <el-table-column prop="locationID" label="位置号" />
+        <el-table-column prop="edit_time" label="编辑时间" />
+        <el-table-column prop="create_time" label="创建时间" />
+        <el-table-column prop="maxCleaningCount" label="最大清洗次数" />
+        <el-table-column prop="cleaningCount" label="当前清洗次数" />
+      </el-table>
+    </div>
+
+    <!-- 操作按钮 -->
+    <div class="button-bar">
       <el-button type="primary" @click="onCreate">新建</el-button>
       <el-button @click="onCancelCreate">取消新建</el-button>
       <el-button type="danger" @click="onScrap">报废</el-button>
@@ -69,6 +81,8 @@
     </div>
   </div>
 </template>
+
+
 
 <script setup>
 import { ref, onMounted } from 'vue'
@@ -143,4 +157,41 @@ onMounted(() => {
   loadSelects()
 })
 </script>
+<style scoped>
+.carrier-view-container {
+  height: 90vh;       /* ① 固定页面高度为视口高度 */
+  padding: 10px;
+  display: flex;       /* ② flex 垂直布局 */
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+
+.filter-bar {
+  display: flex;         /* ① 水平一行排列 */
+  gap: 10px;             /* ② 固定间距 */
+  align-items: center;
+  flex-wrap: nowrap;     /* ③ 不换行，撑开一行 */
+  height: 50px;          /* ④ 固定查询栏高度 */
+}
+
+.select-item {
+  width: 160px;          /* ⑤ select 固定宽度 */
+}
+.table-wrapper {
+  flex: 1;
+  overflow: hidden;
+}
+
+.el-table {
+  height: 100%;
+}
+
+.button-bar {
+  margin-top: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+</style>
 
