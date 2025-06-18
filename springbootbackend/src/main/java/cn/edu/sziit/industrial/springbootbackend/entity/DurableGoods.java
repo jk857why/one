@@ -10,8 +10,8 @@ import java.time.LocalDateTime;
 
 @Data
 @Entity
-@Table(name = "durable_spec")
-public class DurableSpec {
+@Table(name = "durable_goods")
+public class DurableGoods {
 
     @Id
     @Column(name = "DurableSpecID", length = 50, nullable = false)

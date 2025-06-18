@@ -2,29 +2,39 @@ package cn.edu.sziit.industrial.springbootbackend.repository;
 
 import cn.edu.sziit.industrial.springbootbackend.entity.Carrier;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
-public interface CarrierRepository extends JpaRepository<Carrier, String>, JpaSpecificationExecutor<Carrier> {
+public interface CarrierRepository extends JpaRepository<Carrier, String> {
+    @Query("SELECT c FROM Carrier c WHERE " +
+            "(:carrierDetailType IS NULL OR c.CarrierDetailType = :carrierDetailType) AND " +
+            "(:cleaningStatus IS NULL OR c.CleaningStatus = :cleaningStatus) AND " +
+            "(:durableSpecID IS NULL OR c.DurableSpecID = :durableSpecID) AND " +
+            "(:carrierStatus IS NULL OR c.CarrierStatus = :carrierStatus) AND " +
+            "(:capacityStatus IS NULL OR c.CapacityStatus = :capacityStatus)")
+    List<Carrier> findByConditions(
+            @Param("carrierDetailType") String carrierDetailType,
+            @Param("cleaningStatus") String cleaningStatus,
+            @Param("durableSpecID") String durableSpecID,
+            @Param("carrierStatus") String carrierStatus,
+            @Param("capacityStatus") String capacityStatus
+    );
 
-    @Query("select distinct c.CarrierDetailType from Carrier c")
+    // 固定字段的 distinct 查询方法，JPQL 不支持动态字段名参数
+    @Query("SELECT DISTINCT c.CarrierDetailType FROM Carrier c ORDER BY c.CarrierDetailType ASC")
     List<String> findDistinctCarrierDetailType();
 
-    @Query("select distinct c.CleaningStatus from Carrier c")
+    @Query("SELECT DISTINCT c.CleaningStatus FROM Carrier c ORDER BY c.CleaningStatus ASC")
     List<String> findDistinctCleaningStatus();
 
-    @Query("select distinct c.DurableSpecID from Carrier c")
+    @Query("SELECT DISTINCT c.DurableSpecID FROM Carrier c ORDER BY c.DurableSpecID ASC")
     List<String> findDistinctDurableSpecID();
 
-    @Query("select distinct c.CarrierStatus from Carrier c")
+    @Query("SELECT DISTINCT c.CapacityStatus FROM Carrier c ORDER BY c.CarrierStatus ASC")
     List<String> findDistinctCarrierStatus();
 
-    @Query("select distinct c.CapacityStatus from Carrier c")
-
+    @Query("SELECT DISTINCT c.CapacityStatus FROM Carrier c ORDER BY c.CapacityStatus ASC")
     List<String> findDistinctCapacityStatus();
-    @Query("SELECT c FROM Carrier c WHERE c.DurableSpecID = :durableSpecID AND c.CarrierStatus <> '报废' ORDER BY c.CarrierID DESC")
-    List<Carrier> findActiveByDurableSpecIDOrderByCarrierIDDesc(@Param("durableSpecID") String durableSpecID);
 }
