@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/vehicles")
+@RequestMapping("/vehicles")
 @RequiredArgsConstructor
 public class VehicleController {
 
@@ -21,7 +21,6 @@ public class VehicleController {
         List<DurableGoods> durables = vehicleService.getDurablesBySpecID(specId);
         return ResponseEntity.ok(durables);
     }
-
     @PostMapping("/carriers/create")
     public ResponseEntity<String> createCarrier(@RequestParam String durableSpecID,
                                                 @RequestParam(required = false) String locationID) {

@@ -9,9 +9,8 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/carriers")
+@RequestMapping("/carriers")
 public class CarrierController {
-
     private final CarrierService carrierService;
 
     public CarrierController(CarrierService carrierService) {
@@ -96,4 +95,5 @@ public class CarrierController {
             return ResponseEntity.badRequest().build();
         }
     }
+
 }

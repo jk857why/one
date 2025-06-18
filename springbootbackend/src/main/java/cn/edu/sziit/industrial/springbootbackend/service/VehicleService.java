@@ -102,13 +102,12 @@ public class VehicleService {
         carrier.setCapacityStatus("Empty");
         carrier.setBatchNumber("");
         carrier.setBatchQuantity(0);
-        carrier.setEqp_id("");
-        carrier.setPort_id("");
+        carrier.setEqpId("");
+        carrier.setPortId("");
+        carrier.setEditTime(new Date());
         carrier.setCreateTime(new Date());
-        carrier.setEdit_time(new Date());
         carrier.setMaxCleaningCount(durable.getMaxUseCountAfterClean());
         carrier.setCleaningCount(0);
-
         Carrier savedCarrier = carrierService.saveCarrier(carrier);
         return Optional.of(savedCarrier);
     }

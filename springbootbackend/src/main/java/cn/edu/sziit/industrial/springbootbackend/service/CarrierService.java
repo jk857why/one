@@ -34,8 +34,8 @@ public class CarrierService {
     }
 
     @Transactional
-    public boolean cleanCarrier(String carrierId) {
-        Optional<Carrier> optional = carrierRepository.findById(carrierId);
+    public boolean cleanCarrier(String carrierID) {
+        Optional<Carrier> optional = carrierRepository.findById(carrierID);
         if (!optional.isPresent()) return false;
 
         Carrier carrier = optional.get();
@@ -55,7 +55,7 @@ public class CarrierService {
             carrier.setCleaningStatus("Clean");
         }
 
-        carrier.setEdit_time(new java.util.Date());
+        carrier.setEditTime(new java.util.Date());
         carrierRepository.save(carrier);
         return true;
     }
@@ -67,7 +67,7 @@ public class CarrierService {
 
         Carrier carrier = optional.get();
         carrier.setLockStatus(lockStatus);
-        carrier.setEdit_time(new java.util.Date());
+        carrier.setEditTime(new java.util.Date());
         carrierRepository.save(carrier);
         return true;
     }
@@ -79,7 +79,7 @@ public class CarrierService {
 
         Carrier carrier = optional.get();
         carrier.setCarrierStatus(carrierStatus);
-        carrier.setEdit_time(new java.util.Date());
+        carrier.setEditTime(new java.util.Date());
         carrierRepository.save(carrier);
         return true;
     }
@@ -100,4 +100,5 @@ public class CarrierService {
                 throw new IllegalArgumentException("Unsupported field: " + fieldName);
         }
     }
+
 }

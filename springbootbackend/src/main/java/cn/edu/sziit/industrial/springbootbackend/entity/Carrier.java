@@ -12,55 +12,55 @@ public class Carrier {
 
     @Id
     @Column(name = "CarrierID")
-    private String CarrierID;
+    private String carrierID;
 
     @Column(name = "CarrierType")
-    private String CarrierType;
+    private String carrierType;
 
     @Column(name = "CarrierDetailType")
-    private String CarrierDetailType;
+    private String carrierDetailType;
 
     @Column(name = "DurableSpecID")
-    private String DurableSpecID;
+    private String durableSpecID;
 
     @Column(name = "CarrierStatus")
-    private String CarrierStatus;
+    private String carrierStatus;
 
     @Column(name = "CleaningStatus")
-    private String CleaningStatus;
+    private String cleaningStatus;
 
     @Column(name = "LockStatus")
-    private String LockStatus;
+    private String lockStatus;
 
     @Column(name = "CapacityStatus")
-    private String CapacityStatus;
+    private String capacityStatus;
 
     @Column(name = "BatchNumber")
-    private String BatchNumber;
+    private String batchNumber;
 
     @Column(name = "BatchQuantity")
-    private Integer BatchQuantity;
+    private Integer batchQuantity;
 
     @Column(name = "eqp_id")
-    private String eqp_id;
+    private String eqpId;
 
     @Column(name = "port_id")
-    private String port_id;
+    private String portId;
 
     @Column(name = "LocationID")
-    private String LocationID;
+    private String locationID;
 
     @Column(name = "edit_time")
     @Temporal(TemporalType.TIMESTAMP)
-    private Date edit_time;
-
+    private Date editTime;
     @Column(name = "create_time", nullable = false, updatable = false, insertable = false, columnDefinition = "datetime default CURRENT_TIMESTAMP")
     @Temporal(TemporalType.TIMESTAMP)
     private Date createTime;
 
     @Column(name = "MaxCleaningCount")
-    private Integer MaxCleaningCount;
+    private Integer maxCleaningCount;
 
     @Column(name = "CleaningCount")
-    private Integer CleaningCount;
+    private Integer cleaningCount;
 }
+

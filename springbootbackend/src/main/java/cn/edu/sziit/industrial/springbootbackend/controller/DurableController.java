@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/durable")
+@RequestMapping("/durable")
 @RequiredArgsConstructor
 public class DurableController {
 
@@ -18,7 +18,6 @@ public class DurableController {
     public List<DurableGoods> getAllDurables() {
         return durableService.getAllDurables();
     }
-
     @GetMapping("/by-spec-id/{id}")
     public List<DurableGoods> getBySpecId(@PathVariable("id") String id) {
         return durableService.getDurablesBySpecID(id);
