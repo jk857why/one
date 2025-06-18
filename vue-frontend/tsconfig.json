@@ -1,0 +1,26 @@
+{
+  
+  
+  "compilerOptions": {
+      "baseUrl": "./src",
+
+      "paths": {
+        "@/*": ["./src/*"]
+      },
+     
+    // 👇 启用严格模式
+    "strict": true,
+
+    // 👇 启用文件名大小写检查
+    "forceConsistentCasingInFileNames": true,
+
+    // 其他已有配置项
+    "noEmit": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedSideEffectImports": true,
+  },
+  "include": ["src/**/*.ts","src/**/*.d.ts","src/*/*.tsx","src/**/*.vue"],
+  "exclude": ["node_modules"]
+}
