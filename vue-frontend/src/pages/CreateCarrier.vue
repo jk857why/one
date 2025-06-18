@@ -13,6 +13,7 @@
                 <el-option v-for="item in options" :key="item.value" :label="item.label"
                     :value="item.value"></el-option>
             </el-select>
+            <el-button type="primary"  style="width: 75px;">查询</el-button>
         </div>
         <el-row :gutter="20">
             <el-col :span="10">
@@ -172,7 +173,7 @@ const fetchTableData = async () => {
 
 // 页面加载时调用
 onMounted(() => {
-    fetchTableData(),
+        fetchTableData(),
         fetchApproverOptions(),
         selectedModel,
         selectedType

@@ -2,7 +2,7 @@
   <div>
     <el-form :inline="true" label-width="120px">
       <el-form-item label="载具细分类型">
-        <el-select v-model="search.detailType" placeholder="请选择">
+        <el-select v-model="search.carrierDetailType" placeholder="请选择">
           <el-option v-for="item in detailTypes" :key="item" :label="item" :value="item" />
         </el-select>
       </el-form-item>
@@ -72,8 +72,15 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-
 import { useRouter } from 'vue-router'
+
+import { 
+  getDistinctValuesByField, 
+  findCarriersByConditions, 
+  updateLockStatus, 
+  cleanCarrier,
+  updateCarrierStatus
+} from '@/api/carrier'
 
 const router = useRouter()
 
@@ -82,7 +89,7 @@ const onCreate = () => {
 }
 
 const search = ref({
-  detailType: null,
+  carrierDetailType: null,   // 这里用 carrierDetailType，和接口字段保持一致
   cleaningStatus: null,
   durableSpecID: null,
   carrierStatus: null,
@@ -99,29 +106,36 @@ const tableData = ref([])
 
 // 页面加载时调用，初始化下拉框数据
 const loadSelects = async () => {
-  detailTypes.value = await fetchDistinct('CarrierDetailType').then(res => res.data)
-  cleaningStatuses.value = await fetchDistinct('CleaningStatus').then(res => res.data)
-  
-  // durableSpecIDs 需要加 'All' 选项，WinForms 里有
-  durableSpecIDs.value = ['All', ...await fetchDistinct('DurableSpecID').then(res => res.data)]
+  const res1 = await getDistinctValuesByField('carrierDetailType')
+  console.log('carrierDetailType res:', res1)
 
-  carrierStatuses.value = await fetchDistinct('CarrierStatus').then(res => res.data)
-  
-  capacityStatuses.value = ['All', ...await fetchDistinct('CapacityStatus').then(res => res.data)]
+  const res2 = await getDistinctValuesByField('cleaningStatus')
+  console.log('cleaningStatus res:', res2)
+
+  const res3 = await getDistinctValuesByField('durableSpecID')
+  console.log('durableSpecID res:', res3)
+
+  const res4 = await getDistinctValuesByField('carrierStatus')
+  console.log('carrierStatus res:', res4)
+
+  const res5 = await getDistinctValuesByField('capacityStatus')
+  console.log('capacityStatus res:', res5)
+
+  // 根据实际数据结构再处理赋值
 }
+ 
 
 // 点击查询，调用后端接口请求数据
 const loadTableData = async () => {
-  // 把 'All' 转换为 null 传给后端
   const params = {
-    detailType: search.value.detailType,
+    carrierDetailType: search.value.carrierDetailType,
     cleaningStatus: search.value.cleaningStatus === 'All' ? null : search.value.cleaningStatus,
     durableSpecID: search.value.durableSpecID === 'All' ? null : search.value.durableSpecID,
     carrierStatus: search.value.carrierStatus,
     capacityStatus: search.value.capacityStatus === 'All' ? null : search.value.capacityStatus,
   }
 
-  const res = await searchCarriers(params)
+  const res = await findCarriersByConditions(params)
   tableData.value = res.data
 }
 
@@ -129,3 +143,4 @@ onMounted(() => {
   loadSelects()
 })
 </script>
+
