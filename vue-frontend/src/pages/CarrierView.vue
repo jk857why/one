@@ -39,13 +39,7 @@
 
     <!-- 表格区域 -->
     <div class="table-wrapper">
-      <el-table
-        :data="tableData"
-        border
-        height="100%"
-        style="width: 100%"
-        empty-text="暂无数据"
-      >
+      <el-table :data="tableData" border height="100%" style="width: 100%" empty-text="暂无数据" @row-click="handleRowClick" :current-row="currentRow" highlight-current-row>
         <el-table-column prop="carrierID" label="载具编号" />
         <el-table-column prop="carrierType" label="载具类型" />
         <el-table-column prop="carrierDetailType" label="载具细分类型" />
@@ -56,13 +50,14 @@
         <el-table-column prop="capacityStatus" label="容量状态" />
         <el-table-column prop="batchNumber" label="批次号" />
         <el-table-column prop="batchQuantity" label="批次数量" />
-        <el-table-column prop="eqp_id" label="设备号" />
-        <el-table-column prop="port_id" label="端口号" />
+        <el-table-column prop="eqpId" label="设备号" />
+        <el-table-column prop="portId" label="端口号" />
         <el-table-column prop="locationID" label="位置号" />
-        <el-table-column prop="edit_time" label="编辑时间" />
-        <el-table-column prop="create_time" label="创建时间" />
+        <el-table-column prop="editTime" label="编辑时间" />
+        <el-table-column prop="createTime" label="创建时间" />
         <el-table-column prop="maxCleaningCount" label="最大清洗次数" />
         <el-table-column prop="cleaningCount" label="当前清洗次数" />
+
       </el-table>
     </div>
 
@@ -88,19 +83,113 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 
-import { 
-  getDistinctValuesByField, 
-  findCarriersByConditions, 
-  updateLockStatus, 
+const currentRow = ref(null) //  用于高亮当前行
+// 当前选中载具 ID
+const selectedCarrierID = ref(null)
+// 表格点击行事件：记录当前载具ID
+const handleRowClick = (row) => {
+  currentRow.value = row         // 设置高亮行
+  selectedCarrierID.value = row.carrierID // 设置选中的载具ID
+}
+
+// 解锁
+const onUnlock = async () => {
+  if (!selectedCarrierID.value) return console.warn('未选择载具')
+  try {
+    await updateLockStatus(selectedCarrierID.value, 'Unlocked')
+    console.log('解锁成功')
+    await loadTableData()
+  } catch (err) {
+    console.error('解锁失败', err)
+  }
+}
+
+// 锁定
+const onLock = async () => {
+  if (!selectedCarrierID.value) return console.warn('未选择载具')
+  try {
+    await updateLockStatus(selectedCarrierID.value, 'Locked')
+    console.log('锁定成功')
+    await loadTableData()
+  } catch (err) {
+    console.error('锁定失败', err)
+  }
+}
+
+// 释放
+const onRelease =()=>{
+  router.push('/quit')
+}
+
+// 取消释放（假设变更为 Idle）
+const onCancelRelease = () => {
+  console.log('取消释放操作')
+}
+
+
+// 报废（假设状态为 Scrapped）
+const onScrap = async () => {
+  if (!selectedCarrierID.value) return console.warn('未选择载具')
+  try {
+    await updateCarrierStatus(selectedCarrierID.value, 'Scrapped')
+    console.log('报废成功')
+    await loadTableData()
+  } catch (err) {
+    console.error('报废失败', err)
+  }
+}
+
+// 取消报废（假设变更为 Idle）
+const onCancelScrap = async () => {
+  if (!selectedCarrierID.value) return console.warn('未选择载具')
+  try {
+    await updateCarrierStatus(selectedCarrierID.value, 'Idle')
+    console.log('取消报废成功')
+    await loadTableData()
+  } catch (err) {
+    console.error('取消报废失败', err)
+  }
+}
+
+// 清洗
+const onClean = async () => {
+  if (!selectedCarrierID.value) return console.warn('未选择载具')
+  try {
+    await cleanCarrier(selectedCarrierID.value)
+    console.log('清洗成功')
+    await loadTableData()
+  } catch (err) {
+    console.error('清洗失败', err)
+  }
+}
+
+// 新建跳转
+const onCreate = () => {
+  router.push('/create')
+}
+
+// 取消新建（无API，保留占位）
+const onCancelCreate = () => {
+  console.log('取消新建操作')
+}
+
+// 退出
+const onExit = () => {
+  console.log('退出页面')
+  router.back()
+}
+import {
+  getDistinctValuesByField,
+  findCarriersByConditions,
+  updateLockStatus,
   cleanCarrier,
-  updateCarrierStatus
+  updateCarrierStatus,
+  getAllCarriers
 } from '@/api/carrier'
 
 const router = useRouter()
 
-const onCreate = () => {
-  router.push('/durable')
-}
+
 
 const search = ref({
   carrierDetailType: null,   // 这里用 carrierDetailType，和接口字段保持一致
@@ -121,63 +210,110 @@ const tableData = ref([])
 // 页面加载时调用，初始化下拉框数据
 const loadSelects = async () => {
   const res1 = await getDistinctValuesByField('carrierDetailType')
-  console.log('carrierDetailType res:', res1)
+  detailTypes.value = ['All', ...res1]
 
   const res2 = await getDistinctValuesByField('cleaningStatus')
-  console.log('cleaningStatus res:', res2)
+  cleaningStatuses.value = ['All', ...res2]
 
   const res3 = await getDistinctValuesByField('durableSpecID')
-  console.log('durableSpecID res:', res3)
+  durableSpecIDs.value = ['All', ...res3]
 
   const res4 = await getDistinctValuesByField('carrierStatus')
-  console.log('carrierStatus res:', res4)
+  carrierStatuses.value = ['All', ...res4]
 
   const res5 = await getDistinctValuesByField('capacityStatus')
-  console.log('capacityStatus res:', res5)
-
-  // 根据实际数据结构再处理赋值
+  capacityStatuses.value = ['All', ...res5]
 }
- 
 
 // 点击查询，调用后端接口请求数据
+const cleanParam = (val) => (val === null || val === 'All' ? undefined : val)
+
+
 const loadTableData = async () => {
   const params = {
-    carrierDetailType: search.value.carrierDetailType,
-    cleaningStatus: search.value.cleaningStatus === 'All' ? null : search.value.cleaningStatus,
-    durableSpecID: search.value.durableSpecID === 'All' ? null : search.value.durableSpecID,
-    carrierStatus: search.value.carrierStatus,
-    capacityStatus: search.value.capacityStatus === 'All' ? null : search.value.capacityStatus,
+    carrierDetailType: cleanParam(search.value.carrierDetailType),
+    cleaningStatus: cleanParam(search.value.cleaningStatus),
+    durableSpecID: cleanParam(search.value.durableSpecID),
+    carrierStatus: cleanParam(search.value.carrierStatus),
+    capacityStatus: cleanParam(search.value.capacityStatus),
   }
 
-  const res = await findCarriersByConditions(params)
-  tableData.value = res.data
+  try {
+    // ✅ ✅ ✅ 【新增】：定义 isAllSelected
+    const isAllSelected =
+      !params.carrierDetailType &&
+      !params.cleaningStatus &&
+      !params.durableSpecID &&
+      !params.carrierStatus &&
+      !params.capacityStatus
+
+    let res // ✅ ✅ ✅ 【新增】：提前声明 res
+
+    if (isAllSelected) {
+      // 所有条件为空时，获取全部载具
+      res = await getAllCarriers()
+    } else {
+      res = await findCarriersByConditions(params)
+    }
+
+    // ✅ 判断返回格式并赋值
+    if (Array.isArray(res)) {
+      tableData.value = res
+    } else if (res && Array.isArray(res.data)) {
+      tableData.value = res.data
+    } else {
+      console.warn('接口返回数据格式不对:', res)
+      tableData.value = []
+    }
+
+    console.log('表格数据:', tableData.value)
+  } catch (err) {
+    console.error('载具查询失败：', err)
+    tableData.value = []
+  }
+  if (tableData.value.length > 0) {
+  currentRow.value = tableData.value[0] // 设置高亮
+  selectedCarrierID.value = tableData.value[0].carrierID // 设置选中载具 ID
 }
+console.log('表格数据:', tableData.value)
+}
+
 
 onMounted(() => {
   loadSelects()
+  loadTableData()  // 加上这一行，页面加载自动查询一次表格
 })
+
 </script>
 <style scoped>
 .carrier-view-container {
-  height: 90vh;       /* ① 固定页面高度为视口高度 */
+  height: 90vh;
+  /* ① 固定页面高度为视口高度 */
   padding: 10px;
-  display: flex;       /* ② flex 垂直布局 */
+  display: flex;
+  /* ② flex 垂直布局 */
   flex-direction: column;
   box-sizing: border-box;
 }
 
 
 .filter-bar {
-  display: flex;         /* ① 水平一行排列 */
-  gap: 10px;             /* ② 固定间距 */
+  display: flex;
+  /* ① 水平一行排列 */
+  gap: 10px;
+  /* ② 固定间距 */
   align-items: center;
-  flex-wrap: nowrap;     /* ③ 不换行，撑开一行 */
-  height: 50px;          /* ④ 固定查询栏高度 */
+  flex-wrap: nowrap;
+  /* ③ 不换行，撑开一行 */
+  height: 50px;
+  /* ④ 固定查询栏高度 */
 }
 
 .select-item {
-  width: 160px;          /* ⑤ select 固定宽度 */
+  width: 160px;
+  /* ⑤ select 固定宽度 */
 }
+
 .table-wrapper {
   flex: 1;
   overflow: hidden;
@@ -194,4 +330,3 @@ onMounted(() => {
   gap: 10px;
 }
 </style>
-
