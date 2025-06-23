@@ -88,7 +88,7 @@
 
                             <el-row :gutter="10">
                                 <el-col :span="11">
-                                    <el-button type="primary" plain style="width: 75px;">清空</el-button>
+                                    <el-button type="primary" plain style="width: 75px;" @click="onClear">清空</el-button>
                                 </el-col>
                                 <el-col :span="11">
                                     <el-button type="primary" plain style="width: 75px;"
@@ -102,7 +102,7 @@
 
             <!-- 载具表格展示 -->
             <el-col :span="14">
-                <el-table :data="tableData" height="700px" style="width: 95%">
+                <el-table :data="carrierTableData" height="700px" style="width: 95%">
                     <el-table-column prop="carrierID" label="载具编号" />
                     <el-table-column prop="carrierType" label="载具类型" />
                     <el-table-column prop="carrierDetailType" label="载具细分类型" />
@@ -150,10 +150,10 @@ import { ref, onMounted } from 'vue'
 import {
     getAllDurables,
     getDurablesBySpecID,
-    getDistinctDurableSpecIDs,
-    getDurablesWithCarrier
+    getDistinctDurableSpecIDs
 } from '@/api/durable'
 import { createCarrier } from '@/api/vehicle' // 载具创建接口
+import { getAllCarriers } from '@/api/carrier' // 载具查询接口
 import type { DurableGoods } from '@/types/durableGoods'
 
 // 选中的类型和型号
@@ -164,8 +164,11 @@ const selectedModel = ref('')
 const typeOptions = ref<{ label: string; value: string }[]>([])
 const modelOptions = ref<{ label: string; value: string }[]>([])
 
-// 表格数据，耐用品清单
+// 耐用品数据表格
 const tableData = ref<DurableGoods[]>([])
+
+// 载具数据表格（初始空）
+const carrierTableData = ref<any[]>([])
 
 // 表单绑定数据
 const formInline = ref({
@@ -183,25 +186,24 @@ const formInline = ref({
 // 审批人选项
 const approverOptions = ref<string[]>([])
 
-// 是否勾选复选框
+// 复选框状态
 const isCheckedCreateQuantity = ref(false)
 const isCheckedCarrierNumber = ref(false)
 
-// 加载“类型”下拉选项（假设由后端提供）
+// 加载“类型”下拉选项
 const fetchTypeOptions = async () => {
     try {
         const res = await getDistinctDurableSpecIDs()
-        // 接口返回的规格ID数组，转成 {label,value} 形式用于下拉选
         if (res && Array.isArray(res.data)) {
             typeOptions.value = res.data.map((id: string) => ({ label: id, value: id }))
-            modelOptions.value = [...typeOptions.value] // 简单示例用相同列表
+            modelOptions.value = [...typeOptions.value]
         }
     } catch (error) {
         console.error('加载类型失败', error)
     }
 }
 
-// 加载耐用品数据列表，带条件过滤
+// 加载耐用品数据
 const fetchTableData = async (specId = 'All') => {
     try {
         let res
@@ -210,71 +212,118 @@ const fetchTableData = async (specId = 'All') => {
         } else {
             res = await getDurablesBySpecID(specId)
         }
-
-        // ✅ 判断 res 本身是数组
         if (Array.isArray(res)) {
             tableData.value = res
         } else if (Array.isArray(res.data)) {
             tableData.value = res.data
         } else {
-            console.warn('数据格式不符合预期:', res)
+            console.warn('耐用品数据格式不符合预期', res)
             tableData.value = []
         }
     } catch (error) {
-        console.error('获取数据失败:', error)
+        console.error('获取耐用品数据失败', error)
         tableData.value = []
     }
 }
+// 加载载具数据
+const fetchCarrierTableData = async () => {
+  try {
+    const res = await getAllCarriers()
+    console.log('载具列表接口返回:', res)
 
-// 加载审批人选项（示例，假设接口存在）
-const fetchApproverOptions = async () => {
+    if (res && Array.isArray(res)) {
+      carrierTableData.value = res
+    } else {
+      carrierTableData.value = []
+      console.warn('载具数据格式不正确，赋值为空数组')
+    }
+  } catch (error) {
+    console.error('获取载具数据失败', error)
+    carrierTableData.value = []
+  }
 }
 
-// 点击“查询”按钮触发
+// 点击查询按钮
 const onQuery = async () => {
     await fetchTableData(selectedType.value)
 }
 
-// 选中耐用品表格行时，赋值表单相关字段
+// 选中耐用品行赋值表单
 const onSelectDurable = (row: DurableGoods) => {
     formInline.value.durableSpecID = row.durableSpecID
     formInline.value.carrierType = row.durableType
     formInline.value.maxUseCount = row.maxUseCount?.toString() ?? ''
     formInline.value.capacity = row.durableCapacity ?? ''
-    // 这里假设最大清洗次数存在，字段名自行修改
     formInline.value.maxCleaningCount = row.maxUseCountAfterClean?.toString() ?? ''
 }
 
-// 点击“生成”按钮，调用接口创建载具
-const onGenerate = async () => {
-    if (!formInline.value.durableSpecID) {
-        alert('请选择耐用品规格号')
-        return
+// 清空表单
+const onClear = () => {
+    formInline.value = {
+        durableSpecID: '',
+        carrierType: '',
+        maxUseCount: '',
+        maxCleaningCount: '',
+        capacity: '',
+        locationID: '',
+        approver: '',
+        createQuantity: 0,
+        carrierNumber: ''
     }
-    try {
-        await createCarrier(formInline.value.durableSpecID, formInline.value.locationID)
-        console.log('durableSpecID:', formInline.value.durableSpecID)
-        console.log('locationID:', formInline.value.locationID)
-
-        alert('载具创建成功')
-        // 生成后刷新数据或其他逻辑
-        await fetchTableData(selectedType.value)
-    } catch (error) {
-        console.error('生成载具失败', error)
-        alert('生成失败，请检查日志')
-    }
+    isCheckedCreateQuantity.value = false
+    isCheckedCarrierNumber.value = false
 }
 
-// 组件加载时调用
+const onGenerate = async () => {
+  if (!formInline.value.durableSpecID) {
+    alert('请选择耐用品规格号');
+    return;
+  }
+  try {
+    const payload = {
+      durableSpecID: formInline.value.durableSpecID,
+      locationID: formInline.value.locationID || '',
+    };
+    console.log('发送请求数据:', payload);
+
+    const res = await createCarrier(payload);
+    console.log('接口返回数据:', res);
+
+    // createCarrier 返回的就是后端的对象，不用 .data
+    const carrier = res;
+
+    if (carrier && carrier.carrierID) {
+      alert('载具创建成功，ID：' + carrier.carrierID);
+      // 重新加载耐用品和载具列表数据
+      await fetchTableData(selectedType.value);
+      await fetchCarrierTableData();
+    } else {
+      alert('载具创建成功，但未返回载具ID');
+    }
+  } catch (error: any) {
+    console.error('生成载具失败', error);
+    if (error.response) {
+      alert('生成失败：' + JSON.stringify(error.response.data));
+    } else {
+      alert('生成失败，请检查网络或日志');
+    }
+  }
+};
+
+
+// 组件挂载初始化数据
 onMounted(() => {
     fetchTypeOptions()
     fetchTableData()
     fetchApproverOptions()
+    // 载具表初始不加载，保持空
 })
 
+// 审批人加载示例（接口不存在时可留空）
+async function fetchApproverOptions() {
+    approverOptions.value = [] // 如果有接口，替换这里
+}
 </script>
-
-
 
 <style scoped>
 .container {
