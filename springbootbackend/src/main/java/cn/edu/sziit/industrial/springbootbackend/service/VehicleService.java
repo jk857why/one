@@ -15,14 +15,18 @@ public class VehicleService {
     private final DurableService durableService;
     private final CarrierService carrierService;
 
+    private static final String DEFAULT_LOCATION = "Bank";
+
     /**
      * 获取所有耐用品（可按规格ID筛选）
      */
     public List<DurableGoods> getDurablesBySpecID(String durableSpecID) {
-        if ("All".equalsIgnoreCase(durableSpecID) || durableSpecID == null) {
-            return durableService.getAllDurables();
+        if (durableSpecID == null || "All".equalsIgnoreCase(durableSpecID.trim())) {
+            return Optional.ofNullable(durableService.getAllDurables())
+                    .orElse(Collections.emptyList());
         } else {
-            return durableService.getDurablesBySpecID(durableSpecID);
+            return Optional.ofNullable(durableService.getDurablesBySpecID(durableSpecID.trim()))
+                    .orElse(Collections.emptyList());
         }
     }
 
@@ -30,17 +34,24 @@ public class VehicleService {
      * 根据耐用品规格号生成唯一载具编号，并创建载具
      */
     public Optional<Carrier> createCarrierForDurable(String durableSpecID, String locationID) {
+        // 参数校验
+        if (durableSpecID == null || durableSpecID.trim().isEmpty()) {
+            return Optional.empty();
+        }
+
         // 查询耐用品
-        List<DurableGoods> durables = durableService.getDurablesBySpecID(durableSpecID);
+        List<DurableGoods> durables = getDurablesBySpecID(durableSpecID);
         if (durables.isEmpty()) {
             return Optional.empty();
         }
         DurableGoods durable = durables.get(0);
 
         // 获取已有载具ID集合
-        List<Carrier> allCarriers = carrierService.getAllCarriers();
+        List<Carrier> allCarriers = Optional.ofNullable(carrierService.getAllCarriers())
+                .orElse(Collections.emptyList());
         Set<String> existingIds = allCarriers.stream()
                 .map(Carrier::getCarrierID)
+                .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
 
         String prefix;
@@ -56,6 +67,7 @@ public class VehicleService {
         }
 
         String newCarrierId;
+
         if (isSequential) {
             // 顺序编号
             List<Integer> usedIndices = existingIds.stream()
@@ -76,7 +88,7 @@ public class VehicleService {
                 return Optional.empty(); // 编号冲突
             }
         } else {
-            // 随机编号，MA-xxxx
+            // 随机编号
             Random rand = new Random();
             int attempts = 0;
             String candidate;
@@ -84,7 +96,8 @@ public class VehicleService {
                 candidate = prefix + String.format("%04d", rand.nextInt(10000));
                 attempts++;
                 if (attempts > 10000) {
-                    return Optional.empty(); // 无法生成唯一编号
+                    System.err.println("Failed to generate unique CarrierID after 10000 attempts.");
+                    return Optional.empty();
                 }
             } while (existingIds.contains(candidate));
             newCarrierId = candidate;
@@ -92,23 +105,24 @@ public class VehicleService {
 
         Carrier carrier = new Carrier();
         carrier.setCarrierID(newCarrierId);
-        carrier.setCarrierType(durable.getDurableType());
-        carrier.setCarrierDetailType(durable.getDurableDetailType());
+        carrier.setCarrierType(Optional.ofNullable(durable.getDurableType()).orElse("Unknown"));
+        carrier.setCarrierDetailType(Optional.ofNullable(durable.getDurableDetailType()).orElse("Unknown"));
         carrier.setDurableSpecID(durableSpecID);
-        carrier.setLocationID(locationID != null ? locationID : "Bank");
+        carrier.setLocationID(locationID != null ? locationID : DEFAULT_LOCATION);
         carrier.setCarrierStatus("Create");
         carrier.setCleaningStatus("Dirty");
         carrier.setLockStatus("Unlocked");
         carrier.setCapacityStatus("Empty");
         carrier.setBatchNumber("");
         carrier.setBatchQuantity(0);
-        carrier.setEqpId("");
-        carrier.setPortId("");
+        carrier.setEqpId("EQP001");
+        carrier.setPortId(null);
         carrier.setEditTime(new Date());
         carrier.setCreateTime(new Date());
-        carrier.setMaxCleaningCount(durable.getMaxUseCountAfterClean());
+        carrier.setMaxCleaningCount(Optional.ofNullable(durable.getMaxUseCountAfterClean()).orElse(0));
         carrier.setCleaningCount(0);
+
         Carrier savedCarrier = carrierService.saveCarrier(carrier);
-        return Optional.of(savedCarrier);
+        return Optional.ofNullable(savedCarrier);
     }
 }

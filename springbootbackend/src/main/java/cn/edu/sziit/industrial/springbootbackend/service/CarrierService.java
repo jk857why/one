@@ -31,13 +31,24 @@ public class CarrierService {
                                                   String cleaningStatus, String durableSpecID,
                                                   String carrierStatus, String capacityStatus,
                                                   String startStr, String endStr) {
-        Date start = new Date(parseDate(startStr));
-        Date end = new Date(parseDate(endStr));
+        Date start = null;
+        Date end = null;
 
+        try {
+            if (startStr != null && !startStr.isEmpty()) {
+                start = new Date(parseDate(startStr));
+            }
+            if (endStr != null && !endStr.isEmpty()) {
+                end = new Date(parseDate(endStr));
+            }
+        } catch (Exception e) {
+            throw new IllegalArgumentException("日期格式不正确", e);
+        }
 
         return carrierRepository.findByConditions(carrierID, carrierDetailType, cleaningStatus,
                 durableSpecID, carrierStatus, capacityStatus, start, end);
     }
+
     public Carrier saveCarrier(Carrier carrier) {
         return carrierRepository.save(carrier);
     }
