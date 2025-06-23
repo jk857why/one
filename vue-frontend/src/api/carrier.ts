@@ -59,3 +59,28 @@ export type CarrierFieldName =
 export const getDistinctValuesByField = (fieldName: CarrierFieldName) => {
   return request.get(`/carriers/distinct/${fieldName}`)
 }
+
+// 获取不同的载具字段（例如载具类型）
+export function fetchDistinct() {
+  return request.get('/carriers/distinct') // 根据你的后端接口调整URL
+}
+
+// 查询载具（searchCarriers）
+
+export interface CarrierSearchParams {
+  carrierID?: string
+  start?: string
+  end?: string
+}
+
+// 条件查询载具
+export function searchCarriers(params: any) {
+  return request.get('/carriers/search', { params })
+}
+
+// 释放载具（更新状态为 Idle）
+export function releaseCarrier(id: string, status: string) {
+  return request.put(`/carriers/${id}/status`, null, {
+    params: { carrierStatus: status }
+  })
+}
